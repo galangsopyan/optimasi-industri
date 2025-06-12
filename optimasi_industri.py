@@ -1,65 +1,79 @@
 import streamlit as st
+from scipy.optimize import linprog
 import sympy as sp
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
-# Setup awal halaman
-st.title("Studi Kasus: Optimasi Produksi Pabrik")
+st.set_page_config(page_title="Optimasi Produksi - PT. Sinar Terang", layout="centered")
+st.title("🏭 Optimasi Produksi - PT. Sinar Terang")
 
 st.markdown("""
-## 📘 Studi Kasus
-Sebuah pabrik memproduksi dua jenis produk:
-- *Produk A (Blender)*: keuntungan Rp40.000/unit, waktu mesin 2 jam
-- *Produk B (Pemanggang Roti)*: keuntungan Rp60.000/unit, waktu mesin 3 jam
+Aplikasi ini membantu PT. Sinar Terang menentukan jumlah produksi optimal untuk dua produk:
+- *Produk A*: Blender
+- *Produk B*: Pemanggang Roti
 
-*Total waktu mesin tersedia: 100 jam*
-
-Tujuan: Tentukan jumlah masing-masing produk untuk *memaksimalkan keuntungan*.
+Tujuannya adalah untuk *memaksimalkan keuntungan*, dengan batasan waktu mesin yang tersedia per minggu.
 """)
 
-st.markdown("## 🔢 Langkah 1: Menentukan Variabel")
-st.latex(r"x = \text{jumlah produk A (blender)}")
-st.latex(r"y = \text{jumlah produk B (pemanggang roti)}")
+with st.form("input_form"):
+    st.subheader("🔧 Masukkan Parameter Produksi")
 
-st.markdown("## 🧮 Langkah 2: Menyusun Fungsi Objektif")
-st.latex(r"Z = 40x + 60y")
-st.write("Z adalah total keuntungan (dalam ribuan rupiah) yang ingin dimaksimalkan.")
+    col1, col2 = st.columns(2)
 
-st.markdown("## 📐 Langkah 3: Menyusun Kendala")
-st.latex(r"2x + 3y \leq 100")
-st.latex(r"x \geq 0, \quad y \geq 0")
+    with col1:
+        profit_A = st.number_input("Keuntungan per unit Blender (Rp)", value=40000, step=1000, min_value=0)
+        time_A = st.number_input("Jam mesin per unit Blender", value=2.0, step=0.1, min_value=0.1)
+    
+    with col2:
+        profit_B = st.number_input("Keuntungan per unit Pemanggang Roti (Rp)", value=60000, step=1000, min_value=0)
+        time_B = st.number_input("Jam mesin per unit Pemanggang Roti", value=3.0, step=0.1, min_value=0.1)
+    
+    total_time = st.number_input("Total jam mesin tersedia per minggu", value=100.0, step=1.0, min_value=1.0)
 
-st.write("Kendala ini berasal dari batasan waktu mesin maksimal 100 jam per minggu.")
+    submitted = st.form_submit_button("🔍 Hitung Produksi Optimal")
 
-st.markdown("## ✏ Langkah 4: Menyelesaikan Model (Metode Grafik)")
+if submitted:
+    c = [-profit_A, -profit_B]
+    A = [[time_A, time_B]]
+    b = [total_time]
+    bounds = [(0, None), (0, None)]
 
-st.markdown("### Titik potong kendala:")
-st.latex(r"x = 0 \Rightarrow 3y = 100 \Rightarrow y = 33.\overline{3}")
-st.latex(r"y = 0 \Rightarrow 2x = 100 \Rightarrow x = 50")
+    result = linprog(c, A_ub=A, b_ub=b, bounds=bounds, method='highs')
 
-st.markdown("### Uji Titik Pojok:")
+    st.subheader("📊 Hasil Optimasi")
 
-# Hitung nilai Z pada titik-titik pojok
-Z1 = 0
-Z2 = 60 * 33.33
-Z3 = 40 * 50
+    if result.success:
+        x = result.x[0]
+        y = result.x[1]
+        max_profit = -result.fun
 
-st.write(f"Titik (0, 0) ➜ Z = {Z1:,.0f} ribu")
-st.write(f"Titik (0, 33.33) ➜ Z = {Z2:,.0f} ribu")
-st.write(f"Titik (50, 0) ➜ Z = {Z3:,.0f} ribu")
+        st.success("Solusi optimal ditemukan ✅")
+        st.write(f"🔹 Jumlah *Blender (Produk A): **{x:.2f} unit*")
+        st.write(f"🔹 Jumlah *Pemanggang Roti (Produk B): **{y:.2f} unit*")
+        st.write(f"💰 *Total keuntungan maksimal:* Rp *{max_profit:,.0f}*")
 
-st.markdown("## ✅ Solusi Optimal")
+        # ===== VISUALISASI =====
+        st.subheader("📉 Visualisasi Daerah Solusi & Titik Optimal")
 
-if Z2 >= Z3:
-    st.success(f"Solusi optimal: Produksi 0 unit A dan 33 unit B ➜ Keuntungan maksimal Rp{Z2:,.0f} ribu")
-else:
-    st.success(f"Solusi optimal: Produksi 50 unit A dan 0 unit B ➜ Keuntungan maksimal Rp{Z3:,.0f} ribu")
+        fig, ax = plt.subplots(figsize=(7, 5))
 
-st.markdown("### 🔍 Interpretasi:")
-st.info("""
-Perusahaan sebaiknya memilih satu jenis produksi secara penuh:
-- Produksi 50 unit blender *atau*
-- Produksi 33 unit pemanggang roti
+        x_vals = np.linspace(0, total_time / time_A + 5, 400)
+        y_vals = (total_time - time_A * x_vals) / time_B
+        y_vals = np.maximum(0, y_vals)
 
-Pilihlah berdasarkan permintaan pasar dan strategi penjualan.
-""")
+        ax.plot(x_vals, y_vals, label="Batas Waktu Mesin", color="blue")
+        ax.fill_between(x_vals, 0, y_vals, alpha=0.2, color="blue", label="Daerah Feasible")
+
+        ax.scatter(x, y, color="red", zorder=5, label="Solusi Optimal")
+        ax.set_xlim(left=0)
+        ax.set_ylim(bottom=0)
+        ax.set_xlabel("Unit Blender (Produk A)")
+        ax.set_ylabel("Unit Pemanggang Roti (Produk B)")
+        ax.set_title("Visualisasi Optimasi Produksi")
+        ax.legend()
+        ax.grid(True)
+
+        st.pyplot(fig)
+
+    else:
+        st.error("❌ Gagal menemukan solusi optimal.")
