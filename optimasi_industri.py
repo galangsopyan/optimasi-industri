@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 import sympy as sp
 import matplotlib.pyplot as plt
-from scipy import linprog
+from scipy.optimize import linprog
 
 st.set_page_config(page_title="Model Matematika Industri", layout="wide")
 st.title("📊 Aplikasi Model Matematika untuk Industri")
