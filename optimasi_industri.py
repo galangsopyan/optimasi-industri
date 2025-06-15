@@ -30,9 +30,9 @@ with st.form("input_form"):
     
     total_time = st.number_input("Total jam mesin tersedia per minggu", value=100.0, step=1.0, min_value=1.0)
     
-     # Tambahan baru: Menampilkan rumus fungsi tujuan
-     st.markdown("### 📈 Fungsi Tujuan:")
-     st.latex(f"Z = {profit_A}x + {profit_B}y")
+    # Tambahan baru: Menampilkan rumus fungsi tujuan
+    st.markdown("### 📈 Fungsi Tujuan:")
+    st.latex(f"Z = {profit_A}x + {profit_B}y")
 
     submitted = st.form_submit_button("🔍 Hitung Produksi Optimal")
 
