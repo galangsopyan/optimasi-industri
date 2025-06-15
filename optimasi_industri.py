@@ -1,79 +1,77 @@
 import streamlit as st
-from scipy.optimize import linprog
+import numpy as np
 import sympy as sp
 import matplotlib.pyplot as plt
-import numpy as np
+from scipy import linprog
 
-st.set_page_config(page_title="Optimasi Produksi - PT. Sinar Terang", layout="centered")
-st.title("🏭 Optimasi Produksi - PT. Sinar Terang")
+st.set_page_config(page_title="Model Matematika Industri", layout="wide")
+st.title("📊 Aplikasi Model Matematika untuk Industri")
 
-st.markdown("""
-Aplikasi ini membantu PT. Sinar Terang menentukan jumlah produksi optimal untuk dua produk:
-- *Produk A*: Blender
-- *Produk B*: Pemanggang Roti
+# Tab
+tab1, tab2, tab3, tab4 = st.tabs(["Optimasi Produksi", "Model Persediaan (EOQ)", "Model Antrian (M/M/1)", "Model Tambahan"])
 
-Tujuannya adalah untuk *memaksimalkan keuntungan*, dengan batasan waktu mesin yang tersedia per minggu.
-""")
+# Tab 1: Optimasi Produksi
+with tab1:
+    st.header("🔧 Optimasi Produksi - Linear Programming")
+    st.markdown("Masukkan fungsi tujuan dan kendala dalam bentuk koefisien.")
 
-with st.form("input_form"):
-    st.subheader("🔧 Masukkan Parameter Produksi")
+    c = st.text_input("Koefisien Fungsi Tujuan (misal: -3, -5)", "-3, -5")
+    A = st.text_area("Matriks Kendala A (pisahkan baris dengan enter)", "1, 0\n0, 2\n3, 2")
+    b = st.text_input("RHS Kendala (misal: 4, 12, 18)", "4, 12, 18")
 
-    col1, col2 = st.columns(2)
+    if st.button("Hitung Optimasi"):
+        c = list(map(float, c.split(',')))
+        A = [list(map(float, row.split(','))) for row in A.strip().split('\n')]
+        b = list(map(float, b.split(',')))
 
-    with col1:
-        profit_A = st.number_input("Keuntungan per unit Blender (Rp)", value=40000, step=1000, min_value=0)
-        time_A = st.number_input("Jam mesin per unit Blender", value=2.0, step=0.1, min_value=0.1)
-    
-    with col2:
-        profit_B = st.number_input("Keuntungan per unit Pemanggang Roti (Rp)", value=60000, step=1000, min_value=0)
-        time_B = st.number_input("Jam mesin per unit Pemanggang Roti", value=3.0, step=0.1, min_value=0.1)
-    
-    total_time = st.number_input("Total jam mesin tersedia per minggu", value=100.0, step=1.0, min_value=1.0)
+        res = linprog(c, A_ub=A, b_ub=b, method='highs')
+        if res.success:
+            st.success(f"Nilai optimal: {res.fun:.2f}, Variabel: {res.x}")
+        else:
+            st.error("Gagal menyelesaikan optimasi.")
 
-    submitted = st.form_submit_button("🔍 Hitung Produksi Optimal")
+# Tab 2: Model EOQ
+with tab2:
+    st.header("📦 Model Persediaan EOQ")
+    D = st.number_input("Permintaan tahunan (D)", value=1000)
+    S = st.number_input("Biaya pemesanan per pesanan (S)", value=50.0)
+    H = st.number_input("Biaya penyimpanan per unit per tahun (H)", value=5.0)
 
-if submitted:
-    c = [-profit_A, -profit_B]
-    A = [[time_A, time_B]]
-    b = [total_time]
-    bounds = [(0, None), (0, None)]
+    if st.button("Hitung EOQ"):
+        eoq = np.sqrt((2 * D * S) / H)
+        st.success(f"EOQ (Economic Order Quantity) = {eoq:.2f} unit")
 
-    result = linprog(c, A_ub=A, b_ub=b, bounds=bounds, method='highs')
+# Tab 3: Model Antrian M/M/1
+with tab3:
+    st.header("⏳ Model Antrian M/M/1")
+    lam = st.number_input("Laju kedatangan λ (per menit)", value=2.0)
+    mu = st.number_input("Laju pelayanan μ (per menit)", value=3.0)
 
-    st.subheader("📊 Hasil Optimasi")
+    if st.button("Hitung Antrian"):
+        if lam >= mu:
+            st.error("Sistem tidak stabil (λ ≥ μ)")
+        else:
+            rho = lam / mu
+            L = rho / (1 - rho)
+            Lq = rho**2 / (1 - rho)
+            W = 1 / (mu - lam)
+            Wq = lam / (mu * (mu - lam))
+            st.write(f"Rho (ρ): {rho:.2f}")
+            st.write(f"Rata-rata dalam sistem (L): {L:.2f}")
+            st.write(f"Rata-rata dalam antrian (Lq): {Lq:.2f}")
+            st.write(f"Waktu rata-rata dalam sistem (W): {W:.2f} menit")
+            st.write(f"Waktu rata-rata dalam antrian (Wq): {Wq:.2f} menit")
 
-    if result.success:
-        x = result.x[0]
-        y = result.x[1]
-        max_profit = -result.fun
+# Tab 4: Model Matematika Lain
+with tab4:
+    st.header("🧮 Model Tambahan: Break-Even Point")
+    FC = st.number_input("Biaya Tetap (Fixed Cost)", value=10000.0)
+    VC = st.number_input("Biaya Variabel per Unit (Variable Cost)", value=20.0)
+    P = st.number_input("Harga Jual per Unit (Price)", value=50.0)
 
-        st.success("Solusi optimal ditemukan ✅")
-        st.write(f"🔹 Jumlah *Blender (Produk A): **{x:.2f} unit*")
-        st.write(f"🔹 Jumlah *Pemanggang Roti (Produk B): **{y:.2f} unit*")
-        st.write(f"💰 *Total keuntungan maksimal:* Rp *{max_profit:,.0f}*")
-
-        # ===== VISUALISASI =====
-        st.subheader("📉 Visualisasi Daerah Solusi & Titik Optimal")
-
-        fig, ax = plt.subplots(figsize=(7, 5))
-
-        x_vals = np.linspace(0, total_time / time_A + 5, 400)
-        y_vals = (total_time - time_A * x_vals) / time_B
-        y_vals = np.maximum(0, y_vals)
-
-        ax.plot(x_vals, y_vals, label="Batas Waktu Mesin", color="blue")
-        ax.fill_between(x_vals, 0, y_vals, alpha=0.2, color="blue", label="Daerah Feasible")
-
-        ax.scatter(x, y, color="red", zorder=5, label="Solusi Optimal")
-        ax.set_xlim(left=0)
-        ax.set_ylim(bottom=0)
-        ax.set_xlabel("Unit Blender (Produk A)")
-        ax.set_ylabel("Unit Pemanggang Roti (Produk B)")
-        ax.set_title("Visualisasi Optimasi Produksi")
-        ax.legend()
-        ax.grid(True)
-
-        st.pyplot(fig)
-
-    else:
-        st.error("❌ Gagal menemukan solusi optimal.")
+    if st.button("Hitung Break-Even Point"):
+        if P > VC:
+            BEP = FC / (P - VC)
+            st.success(f"Break-Even Point: {BEP:.2f} unit")
+        else:
+            st.error("Harga jual harus lebih besar dari biaya variabel.")
