@@ -37,7 +37,7 @@ with st.form("input_form"):
 
     submitted = st.form_submit_button("🔍 Hitung Produksi Optimal")
 
-    submitted = st.form_submit_button("🔍 Hitung Produksi Optimal")
+
 
 if submitted:
     c = [-profit_A, -profit_B]
