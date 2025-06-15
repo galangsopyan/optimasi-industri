@@ -200,5 +200,5 @@ with tab4:
     st.write(f"Break-even Point: {break_even:.2f} unit")
     st.pyplot(fig)
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     st.write("Aplikasi Model Matematika Industri")
