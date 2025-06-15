@@ -28,7 +28,7 @@ with st.form("input_form"):
         profit_B = st.number_input("Keuntungan per unit Pemanggang Roti (Rp)", value=60000, step=1000, min_value=0)
         time_B = st.number_input("Jam mesin per unit Pemanggang Roti", value=3.0, step=0.1, min_value=0.1)
     
-     total_time = st.number_input("Total jam mesin tersedia per minggu", value=100.0, step=1.0, min_value=1.0)
+    total_time = st.number_input("Total jam mesin tersedia per minggu", value=100.0, step=1.0, min_value=1.0)
     
      # Tambahan baru: Menampilkan rumus fungsi tujuan
      st.markdown("### 📈 Fungsi Tujuan:")
