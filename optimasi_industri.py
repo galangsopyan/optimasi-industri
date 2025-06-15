@@ -29,8 +29,7 @@ with st.form("input_form"):
         time_B = st.number_input("Jam mesin per unit Pemanggang Roti", value=3.0, step=0.1, min_value=0.1)
     
      total_time = st.number_input("Total jam mesin tersedia per minggu", value=100.0, step=1.0, min_value=1.0)
-     total_time = st.number_input("Total jam mesin tersedia per minggu", value=100.0, step=1.0, min_value=1.0)
-
+    
      # Tambahan baru: Menampilkan rumus fungsi tujuan
      st.markdown("### 📈 Fungsi Tujuan:")
      st.latex(f"Z = {profit_A}x + {profit_B}y")
@@ -55,8 +54,8 @@ if submitted:
         max_profit = -result.fun
 
         st.success("Solusi optimal ditemukan ✅")
-        st.write(f"🔹 Jumlah Blender (Produk A): **{x:.2f} unit")
-        st.write(f"🔹 Jumlah Pemanggang Roti (Produk B): **{y:.2f} unit")
+        st.write(f"🔹 Jumlah Blender (Produk A): **{x:.2f} unit**")
+        st.write(f"🔹 Jumlah Pemanggang Roti (Produk B): **{y:.2f} unit**")
         st.write(f"💰 Total keuntungan maksimal: Rp {max_profit:,.0f}")
 
         # ===== VISUALISASI =====
