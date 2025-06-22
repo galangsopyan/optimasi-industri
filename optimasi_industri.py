@@ -21,7 +21,7 @@ with st.form("input_form"):
     col1, col2 = st.columns(2)
 
     with col1:
-        profit_A = st.number_input("Keuntungan per unit Blender (Rp)", key="profit_A", value=60000, step=1000, min_value=0)
+        profit_A = st.number_input("Keuntungan per unit Blender (Rp)", key="profit_A", value=50000, step=1000, min_value=0)
         time_A = st.number_input("Waktu mesin per unit Blender(jam)", key="time_A", value=2.0, step=0.1, min_value=0.1)
     
     with col2:
