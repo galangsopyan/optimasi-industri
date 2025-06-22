@@ -21,7 +21,7 @@ with st.form("input_form"):
     col1, col2 = st.columns(2)
 
     with col1:
-        profit_A = st.number_input("Keuntungan per unit Blender (Rp)", key="profit_A", value=50000, step=1000, min_value=0)
+        profit_A = st.number_input("Keuntungan per unit Blender (Rp)", key="profit_A", value=70000, step=1000, min_value=0)
         time_A = st.number_input("Waktu mesin per unit Blender(jam)", key="time_A", value=2.0, step=0.1, min_value=0.1)
     
     with col2:
@@ -31,10 +31,10 @@ with st.form("input_form"):
     total_time = st.number_input("Total jam mesin tersedia per minggu", key="total_time", value=100.0, step=1.0, min_value=1.0)
     
     # Tambahan baru: Menampilkan rumus fungsi tujuan
-    st.markdown("### 📈 Fungsi Tujuan:")
+    st.markdown("### 📈 Fungsi Objektif:")
     st.latex(f"Z = {profit_A}x + {profit_B}y")
 
-    submitted = st.form_submit_button("🔍 Hitung Produksi Optimal")
+    submitted = st.form_submit_button("🔍 Hitung Hasil Produksi Optimal")
 
 
 
