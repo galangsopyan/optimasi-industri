@@ -1,85 +1,148 @@
 import streamlit as st
 from scipy.optimize import linprog
-import sympy as sp
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import json
+import base64
 
-st.set_page_config(page_title="Optimasi Produksi - PT. Sinar Terang", layout="centered")
-st.title("🏭 Optimasi Produksi - PT. Sinar Terang")
+st.set_page_config(page_title="Optimasi Produksi Kue - SweetBite", layout="centered")
+
+# Custom CSS styling
+st.markdown("""
+<style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+    }
+    .main {
+        background-color: #fffdf7;
+    }
+    h1 {
+        color: #d2691e;
+        text-align: center;
+        font-size: 40px;
+        margin-bottom: 20px;
+    }
+    .stButton > button {
+        background-color: #ffb347;
+        color: white;
+        font-weight: bold;
+    }
+    .stDownloadButton > button {
+        background-color: #20c997;
+        color: white;
+        font-weight: bold;
+    }
+    .logo {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 300px;
+        margin-bottom: 1rem;
+</style>
+""", unsafe_allow_html=True)
+# Tambahkan logo
+st.markdown("<img src='https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.disnakerja.com%2Flowongan-kerja-pt-sinar-terang-mandiri%2F&psig=AOvVaw2pTUdna0cChJW4Ri9FAxbG&ust=1753824869315000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCLCkhtrB4I4DFQAAAAAdAAAAABAE.jpg' class='logo'>", unsafe_allow_html=True)
+
+st.markdown("<h1>🎂 Optimasi Produksi - Toko Kue SweetBite</h1>", unsafe_allow_html=True)
 
 st.markdown("""
-Aplikasi ini membantu PT. Sinar Terang menentukan jumlah produksi optimal untuk dua produk:
-- Produk A: Blender
-- Produk B: Pemanggang Roti
+<p style='font-size: 18px;'>
+Aplikasi ini membantu menentukan kombinasi produksi <strong>Kue Cokelat</strong> dan <strong>Kue Keju</strong> yang memberikan keuntungan maksimal berdasarkan keterbatasan sumber daya.
+</p>
+""", unsafe_allow_html=True)
 
-Tujuannya adalah untuk memaksimalkan keuntungan, dengan batasan waktu mesin yang tersedia per minggu.
-""")
+# INPUT
+st.header("📥 Input Data Produksi")
 
-with st.form("input_form"):
-    st.subheader("🔧 Masukkan Parameter Produksi")
+col1, col2 = st.columns(2)
+with col1:
+    profit_X = st.number_input("Keuntungan Kue Cokelat (Rp)", value=6000)
+    flour_X = st.number_input("Tepung untuk Cokelat (gr)", value=200)
+    labor_X = st.number_input("Jam kerja Kue Cokelat", value=2)
 
-    col1, col2 = st.columns(2)
+with col2:
+    profit_Y = st.number_input("Keuntungan Kue Keju (Rp)", value=8000)
+    flour_Y = st.number_input("Tepung untuk Keju (gr)", value=300)
+    labor_Y = st.number_input("Jam kerja Kue Keju", value=1)
 
-    with col1:
-        profit_A = st.number_input("Keuntungan per unit Blender (Rp)", key="profit_A", value=70000, step=1000, min_value=0)
-        time_A = st.number_input("Waktu mesin per unit Blender(jam)", key="time_A", value=2.0, step=0.1, min_value=0.1)
-    
-    with col2:
-        profit_B = st.number_input("Keuntungan per unit Pemanggang Roti (Rp)", key="profit_B", value=80000, step=1000, min_value=0)
-        time_B = st.number_input("Waktu mesin per unit Pemanggang Roti(jam)", key="time_B", value=3.0, step=0.1, min_value=0.1)
-    
-    total_time = st.number_input("Total jam mesin tersedia per minggu", key="total_time", value=100.0, step=1.0, min_value=1.0)
-    
-    # Tambahan baru: Menampilkan rumus fungsi tujuan
-    st.markdown("### 📈 Fungsi Objektif:")
-    st.latex(f"Z = {profit_A}x + {profit_B}y")
+# batasan
+st.subheader("⛔ Batasan Sumber Daya")
+total_flour = st.slider("Total Tepung (gr)", min_value=1000, max_value=10000, value=6000, step=100)
+total_labor = st.slider("Total Jam Kerja (jam)", min_value=10, max_value=56, value=40, step=1)
 
-    submitted = st.form_submit_button("🔍 Hitung Hasil Produksi Optimal")
+# Fungsi untuk download data sebagai JSON
+def download_json(data, filename="hasil.json"):
+    json_str = json.dumps(data, indent=4)
+    b64 = base64.b64encode(json_str.encode()).decode()
+    href = f'<a href="data:file/json;base64,{b64}" download="{filename}">📥 Download Hasil sebagai JSON</a>'
+    return href
 
+# Solve using linprog
+c = [-profit_X, -profit_Y]  # Max profit -> Minimize negative
+A = [
+    [flour_X, flour_Y],
+    [labor_X, labor_Y]
+]
+b = [total_flour, total_labor]
 
+res = linprog(c, A_ub=A, b_ub=b, method='highs')
 
-if submitted:
-    c = [-profit_A, -profit_B]
-    A = [[time_A, time_B]]
-    b = [total_time]
-    bounds = [(0, None), (0, None)]
+if res.success:
+    x_cokelat, x_keju = res.x
+    total_profit = -res.fun
 
-    result = linprog(c, A_ub=A, b_ub=b, bounds=bounds, method='highs')
+    st.success("✅ Solusi Optimal Ditemukan!")
+    st.write(f"Jumlah **Kue Cokelat**: `{x_cokelat:.2f}` unit")
+    st.write(f"Jumlah **Kue Keju**: `{x_keju:.2f}` unit")
+    st.write(f"💰 **Total Keuntungan Maksimal**: `Rp {total_profit:,.0f}`")
 
-    st.subheader("📊 Hasil Optimasi")
+    # Tabel ringkasan
+    hasil = pd.DataFrame({
+        "Produk": ["Kue Cokelat", "Kue Keju"],
+        "Jumlah Optimal": [x_cokelat, x_keju],
+        "Keuntungan per Unit": [profit_X, profit_Y],
+        "Total Keuntungan": [x_cokelat*profit_X, x_keju*profit_Y]
+    })
+    st.subheader("📋 Ringkasan Perhitungan")
+    st.dataframe(hasil, use_container_width=True)
 
-    if result.success:
-        x = result.x[0]
-        y = result.x[1]
-        max_profit = -result.fun
+    # Download hasil
+    st.markdown(download_json({
+        "Kue Cokelat": round(x_cokelat, 2),
+        "Kue Keju": round(x_keju, 2),
+        "Total Keuntungan": round(total_profit, 2)
+    }), unsafe_allow_html=True)
 
-        st.success("Solusi optimal ditemukan ✅")
-        st.write(f"🔹 Jumlah Blender (Produk A): **{x:.2f} unit**")
-        st.write(f"🔹 Jumlah Pemanggang Roti (Produk B): **{y:.2f} unit**")
-        st.write(f"💰 Total keuntungan maksimal: Rp {max_profit:,.0f}")
+    # Visualisasi
+    st.subheader("📊 Visualisasi Area Feasible dan Solusi Optimal")
+    x = np.linspace(0, 50, 400)
+    y1 = (total_flour - flour_X * x) / flour_Y
+    y2 = (total_labor - labor_X * x) / labor_Y
 
-        # ===== VISUALISASI =====
-        st.subheader("📉 Visualisasi Daerah Solusi & Titik Optimal")
+    fig, ax = plt.subplots()
+    ax.plot(x, y1, label='Batas Tepung', color='brown')
+    ax.plot(x, y2, label='Batas Jam Kerja', color='orange')
+    ax.fill_between(x, np.minimum(y1, y2), 0, where=(y1>0)&(y2>0), color='peachpuff', alpha=0.3)
 
-        fig, ax = plt.subplots(figsize=(7, 5))
+    ax.plot(x_cokelat, x_keju, 'ro', label='Solusi Optimal')
+    ax.set_xlim(left=0)
+    ax.set_ylim(bottom=0)
+    ax.set_xlabel("Kue Cokelat")
+    ax.set_ylabel("Kue Keju")
+    ax.legend()
+    st.pyplot(fig)
 
-        x_vals = np.linspace(0, total_time / time_A + 5, 400)
-        y_vals = (total_time - time_A * x_vals) / time_B
-        y_vals = np.maximum(0, y_vals)
+    # Penjelasan
+    with st.expander("🔍 Lihat Penjelasan Langkah Linear Programming"):
+        st.markdown(f"""
+        1. Fungsi tujuan: `Z = {profit_X}X + {profit_Y}Y`
+        2. Batasan:
+            - `{flour_X}X + {flour_Y}Y <= {total_flour}` (Tepung)
+            - `{labor_X}X + {labor_Y}Y <= {total_labor}` (Jam kerja)
+        3. Diubah ke bentuk matriks dan diselesaikan dengan metode *Simplex*
+        4. Hasil berupa kombinasi optimal dan nilai maksimum fungsi tujuan
+        """)
 
-        ax.plot(x_vals, y_vals, label="Batas Waktu Mesin", color="blue")
-        ax.fill_between(x_vals, 0, y_vals, alpha=0.2, color="blue", label="Daerah Feasible")
-
-        ax.scatter(x, y, color="red", zorder=5, label="Solusi Optimal")
-        ax.set_xlim(left=0)
-        ax.set_ylim(bottom=0)
-        ax.set_xlabel("Unit Blender (Produk A)")
-        ax.set_ylabel("Unit Pemanggang Roti (Produk B)")
-        ax.set_title("Visualisasi Optimasi Produksi")
-        ax.legend()
-        ax.grid(True)
-
-        st.pyplot(fig)
-
-    else:
-        st.error("❌ Gagal menemukan solusi optimal.")
+else:
+    st.error("❌ Tidak ditemukan solusi feasible. Coba ubah batasan atau input.")
