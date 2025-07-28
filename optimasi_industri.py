@@ -132,15 +132,6 @@ if res.success:
     ax.legend()
     st.pyplot(fig)
 
-    # Penjelasan
-    with st.expander("🔍 Lihat Penjelasan Langkah Linear Programming"):
-        st.markdown(f"""
-        1. Fungsi tujuan: `Z = {profit_X}X + {profit_Y}Y`
-        2. Batasan:
-            - `{labor_X}X + {labor_Y}Y <= {total_labor}` (Jam kerja)
-        3. Diubah ke bentuk matriks dan diselesaikan dengan metode *Simplex*
-        4. Hasil berupa kombinasi optimal dan nilai maksimum fungsi tujuan
-        """)
 
 else:
     st.error("❌ Tidak ditemukan solusi feasible. Coba ubah batasan atau input.")
