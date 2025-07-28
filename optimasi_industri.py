@@ -68,7 +68,9 @@ with col1:
 with col2:
     profit_Y = st.number_input("Keuntungan Per unit Pemanggang Roti (Rp)", value=8000)
     labor_Y = st.number_input("Jam kerja Pemanggang Roti", value=3)
-
+    
+ st.markdown("### 📈 Fungsi Objektif:")
+    st.latex(f"Z = {profit_A}x + {profit_B}y")
 # batasan
 st.subheader("⛔ Batasan Waktu Mesin Per Minggu")
 total_labor = st.slider("Total Jam Mesin Per Minggu (jam)", min_value=1, max_value=100, value=40, step=1)
