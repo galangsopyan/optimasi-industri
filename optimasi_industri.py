@@ -6,7 +6,7 @@ import pandas as pd
 import json
 import base64
 
-st.set_page_config(page_title="Optimasi Produksi Kue - SweetBite", layout="centered")
+st.set_page_config(page_title="Optimasi PT Sinar Terang Mandiri", layout="centered")
 
 # Custom CSS styling
 st.markdown("""
@@ -46,7 +46,7 @@ st.markdown("""
 # Tambahkan logo
 st.markdown("<img src='https://mihzzrbqlgf1.cdn.shift8web.ca/wp-content/uploads/2021/01/Sinar-Terang-Logo.jpg' class='logo'>", unsafe_allow_html=True)
 
-st.markdown("<h1>🎂 Optimasi Produksi - PT SINAR TERANG MANDIRI</h1>", unsafe_allow_html=True)
+st.markdown("<h1>OPTIMASI PRODUKSI - PT SINAR TERANG MANDIRI</h1>", unsafe_allow_html=True)
 
 st.markdown("""
 <p style='font-size: 18px;'>
