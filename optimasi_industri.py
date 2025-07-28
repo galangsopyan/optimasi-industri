@@ -42,13 +42,18 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 # Tambahkan logo
-st.markdown("<img src='https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.disnakerja.com%2Flowongan-kerja-pt-sinar-terang-mandiri%2F&psig=AOvVaw2pTUdna0cChJW4Ri9FAxbG&ust=1753824869315000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCLCkhtrB4I4DFQAAAAAdAAAAABAE.jpg' class='logo'>", unsafe_allow_html=True)
+st.markdown("<img src='https://mihzzrbqlgf1.cdn.shift8web.ca/wp-content/uploads/2021/01/Sinar-Terang-Logo.jpg.jpg' class='logo'>", unsafe_allow_html=True)
 
-st.markdown("<h1>🎂 Optimasi Produksi - Toko Kue SweetBite</h1>", unsafe_allow_html=True)
+st.markdown("<h1>🎂 Optimasi Produksi - PT SINAR TERANG MANDIRI</h1>", unsafe_allow_html=True)
 
 st.markdown("""
 <p style='font-size: 18px;'>
-Aplikasi ini membantu menentukan kombinasi produksi <strong>Kue Cokelat</strong> dan <strong>Kue Keju</strong> yang memberikan keuntungan maksimal berdasarkan keterbatasan sumber daya.
+Aplikasi ini membantu PT. Sinar Terang menentukan jumlah produksi optimal untuk dua produk:
+- Produk A: Blender
+- Produk B: Pemanggang Roti
+
+Tujuannya adalah untuk memaksimalkan keuntungan, dengan batasan waktu mesin yang tersedia per minggu.
+""")
 </p>
 """, unsafe_allow_html=True)
 
@@ -57,19 +62,16 @@ st.header("📥 Input Data Produksi")
 
 col1, col2 = st.columns(2)
 with col1:
-    profit_X = st.number_input("Keuntungan Kue Cokelat (Rp)", value=6000)
-    flour_X = st.number_input("Tepung untuk Cokelat (gr)", value=200)
-    labor_X = st.number_input("Jam kerja Kue Cokelat", value=2)
+    profit_X = st.number_input("Keuntungan Per unit Blender (Rp)", value=7000)
+    labor_X = st.number_input("Jam kerja Blender", value=2)
 
 with col2:
-    profit_Y = st.number_input("Keuntungan Kue Keju (Rp)", value=8000)
-    flour_Y = st.number_input("Tepung untuk Keju (gr)", value=300)
-    labor_Y = st.number_input("Jam kerja Kue Keju", value=1)
+    profit_Y = st.number_input("Keuntungan Per unit Pemanggang Roti (Rp)", value=8000)
+    labor_Y = st.number_input("Jam kerja Pemanggang Roti", value=3)
 
 # batasan
-st.subheader("⛔ Batasan Sumber Daya")
-total_flour = st.slider("Total Tepung (gr)", min_value=1000, max_value=10000, value=6000, step=100)
-total_labor = st.slider("Total Jam Kerja (jam)", min_value=10, max_value=56, value=40, step=1)
+st.subheader("⛔ Batasan Waktu Mesin Per Minggu")
+total_labor = st.slider("Total Jam Mesin Per Minggu (jam)", min_value=1, max_value=100, value=40, step=1)
 
 # Fungsi untuk download data sebagai JSON
 def download_json(data, filename="hasil.json"):
@@ -81,55 +83,52 @@ def download_json(data, filename="hasil.json"):
 # Solve using linprog
 c = [-profit_X, -profit_Y]  # Max profit -> Minimize negative
 A = [
-    [flour_X, flour_Y],
     [labor_X, labor_Y]
 ]
-b = [total_flour, total_labor]
+b = [ total_labor]
 
 res = linprog(c, A_ub=A, b_ub=b, method='highs')
 
 if res.success:
-    x_cokelat, x_keju = res.x
+    x_blender, x_pemanggang roti = res.x
     total_profit = -res.fun
 
     st.success("✅ Solusi Optimal Ditemukan!")
-    st.write(f"Jumlah **Kue Cokelat**: `{x_cokelat:.2f}` unit")
-    st.write(f"Jumlah **Kue Keju**: `{x_keju:.2f}` unit")
+    st.write(f"Jumlah **Blender**: `{x_cokelat:.2f}` unit")
+    st.write(f"Jumlah **Pemanggang Roti**: `{x_keju:.2f}` unit")
     st.write(f"💰 **Total Keuntungan Maksimal**: `Rp {total_profit:,.0f}`")
 
     # Tabel ringkasan
     hasil = pd.DataFrame({
-        "Produk": ["Kue Cokelat", "Kue Keju"],
-        "Jumlah Optimal": [x_cokelat, x_keju],
+        "Produk": ["Blender", "Pemanggang Roti"],
+        "Jumlah Optimal": [x_Blender, x_Pemanggang Roti],
         "Keuntungan per Unit": [profit_X, profit_Y],
-        "Total Keuntungan": [x_cokelat*profit_X, x_keju*profit_Y]
+        "Total Keuntungan": [x_Blender*profit_X, x_Pemanggang Roti*profit_Y]
     })
     st.subheader("📋 Ringkasan Perhitungan")
     st.dataframe(hasil, use_container_width=True)
 
     # Download hasil
     st.markdown(download_json({
-        "Kue Cokelat": round(x_cokelat, 2),
-        "Kue Keju": round(x_keju, 2),
+        "Blender": round(x_cokelat, 2),
+        "Pemanggang Roti": round(x_keju, 2),
         "Total Keuntungan": round(total_profit, 2)
     }), unsafe_allow_html=True)
 
     # Visualisasi
     st.subheader("📊 Visualisasi Area Feasible dan Solusi Optimal")
     x = np.linspace(0, 50, 400)
-    y1 = (total_flour - flour_X * x) / flour_Y
-    y2 = (total_labor - labor_X * x) / labor_Y
+    y = (total_labor - labor_X * x) / labor_Y
 
     fig, ax = plt.subplots()
-    ax.plot(x, y1, label='Batas Tepung', color='brown')
-    ax.plot(x, y2, label='Batas Jam Kerja', color='orange')
+    ax.plot(x, y, label='Batas Waktu Mesin', color='orange')
     ax.fill_between(x, np.minimum(y1, y2), 0, where=(y1>0)&(y2>0), color='peachpuff', alpha=0.3)
 
-    ax.plot(x_cokelat, x_keju, 'ro', label='Solusi Optimal')
+    ax.plot(x_Blender, x_Pemanggang Roti, 'ro', label='Solusi Optimal')
     ax.set_xlim(left=0)
     ax.set_ylim(bottom=0)
-    ax.set_xlabel("Kue Cokelat")
-    ax.set_ylabel("Kue Keju")
+    ax.set_xlabel("Blender")
+    ax.set_ylabel("Pemanggang Roti")
     ax.legend()
     st.pyplot(fig)
 
@@ -138,7 +137,6 @@ if res.success:
         st.markdown(f"""
         1. Fungsi tujuan: `Z = {profit_X}X + {profit_Y}Y`
         2. Batasan:
-            - `{flour_X}X + {flour_Y}Y <= {total_flour}` (Tepung)
             - `{labor_X}X + {labor_Y}Y <= {total_labor}` (Jam kerja)
         3. Diubah ke bentuk matriks dan diselesaikan dengan metode *Simplex*
         4. Hasil berupa kombinasi optimal dan nilai maksimum fungsi tujuan
