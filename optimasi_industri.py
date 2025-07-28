@@ -50,7 +50,7 @@ st.markdown("<h1>OPTIMASI PRODUKSI - PT SINAR TERANG MANDIRI</h1>", unsafe_allow
 
 st.markdown("""
 <p style='font-size: 18px;'>
-Aplikasi ini membantu PT. Sinar Terang menentukan jumlah produksi optimal untuk dua produk:<br>
+Aplikasi ini membantu PT. Sinar Terang Mandiri menentukan jumlah produksi optimal untuk dua produk:<br>
 - Produk A: Blender<br>
 - Produk B: Pemanggang Roti<br><br>
 Tujuannya adalah untuk memaksimalkan keuntungan, dengan batasan waktu mesin yang tersedia per minggu.
