@@ -44,7 +44,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Tambahkan logo
-st.markdown("<img src='https://mihzzrbqlgf1.cdn.shift8web.ca/wp-content/uploads/2021/01/Sinar-Terang-Logo.jpg.jpg' class='logo'>", unsafe_allow_html=True)
+st.markdown("<img src='https://mihzzrbqlgf1.cdn.shift8web.ca/wp-content/uploads/2021/01/Sinar-Terang-Logo.jpg' class='logo'>", unsafe_allow_html=True)
 
 st.markdown("<h1>🎂 Optimasi Produksi - PT SINAR TERANG MANDIRI</h1>", unsafe_allow_html=True)
 
