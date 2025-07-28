@@ -77,7 +77,7 @@ total_labor = st.slider("Total Jam Mesin Per Minggu (jam)", min_value=1, max_val
 st.subheader("📈 Fungsi Objektif")
 
 st.latex(r'''
-\text{Maximalkan: } Z = {%.0f}x + {%.0f}y
+\text Z = {%.0f}x + {%.0f}y
 ''' % (profit_X, profit_Y))
 
 st.markdown("""
