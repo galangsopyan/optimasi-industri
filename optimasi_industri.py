@@ -71,7 +71,7 @@ with col2:
     
 # batasan
 st.subheader("⛔ Batasan Waktu Mesin Per Minggu")
-total_labor = st.slider("Total Jam Mesin Per Minggu (jam)", min_value=1, max_value=100, value=40, step=1)
+total_labor = st.slider("Total Jam Mesin Per Minggu (jam)", min_value=1, max_value=100, value=100, step=1)
 
 # Tampilkan Fungsi Objektif
 st.subheader("📈 Fungsi Objektif")
